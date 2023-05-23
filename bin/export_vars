@@ -1,0 +1,39 @@
+#!/bin/sh
+
+# export_vars, v0.5
+# For immediate addition of entries from 'user_shell_paths' to 'PATH' variable.
+# Will skip items already in 'PATH', so it can be invoked multiple times from
+# multiple places safely. Run from command line with a dot: `. export_vars`
+
+shell_paths=~/.config/shell-vars/user_shell_paths
+if [ ! -f "$shell_paths" ]
+then
+  echo "error: '~/.config/shell-vars/user_shell_paths' not found" 1>&2
+  exit 1
+fi
+
+# Read but also check items from 'user_shell_paths' in case somebody is pulling our leg.
+new_path_suffix=
+while IFS= read -r line
+do
+  # If line does not start with '/' skip it (continue).
+  case $line in
+    "/"*) ;;
+    *) continue ;;
+  esac
+
+  # Is it a valid directory?
+  if [ -d "$line" ]
+  then
+    # Check if directory is already in '$PATH'. If not, prepare for addition.
+    case "$PATH" in
+      *$line* ) ;;
+      * ) new_path_suffix="${new_path_suffix}:${line}" ;;
+  esac
+  fi
+done < $shell_paths
+
+if [ ! -z "$new_path_suffix" ]
+then
+  export PATH="${PATH}${new_path_suffix}"
+fi

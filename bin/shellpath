@@ -1,0 +1,127 @@
+#!/bin/sh
+
+# shellpath, v0.5
+# Add/remove entries from 'user_shell_paths' configuration file.
+# Commands: add <PATH>, rm <PATH>, clean - <PATH> can be relative, i.e. '.' (current directory)
+
+comment_line="# DO NOT EDIT. Generated with 'shellpath'. List of user's paths to be added to '\$PATH' at login."
+help_line="Use: add <PATH>, rm <PATH>, clean"
+
+#
+# Check if '~/.config/shell-vars/user_shell_paths' exists, if not create empty one.
+#
+shell_paths_dir=~/.config/shell-vars
+if [ ! -d "$shell_paths_dir" ]
+then
+  mkdir -p "$shell_paths_dir"
+  result=$?
+  if [ $result -ne 0 ]; then
+    echo "error: failed to create '$shell_paths_dir', cannot continue." 1>&2
+    exit 1
+  fi
+fi
+
+shell_paths="${shell_paths_dir}/user_shell_paths"
+if [ ! -f "$shell_paths" ]
+then
+  printf "%s\n" "$comment_line" > "$shell_paths"
+  echo "New 'user_shell_paths' config file created in '.config/shell-vars'"
+fi
+
+#
+# Print help if used without arguments.
+#
+if [ $# -eq 0 ]
+then
+  echo "$help_line"
+  exit 1
+fi
+
+#
+# 'clean' will remove empty lines and invalid directory entries.
+#
+if [ "$1" = "clean" ]
+then
+  clean_shell_paths="${comment_line}
+"
+  while IFS= read -r line
+  do
+    # If line does not start with '/' skip it (continue).
+    case $line in
+      "/"*) ;;
+      *) continue ;;
+    esac
+
+    if [ ! -d "$line" ]
+    then
+      echo "Removed: $line"
+    else
+      clean_shell_paths="${clean_shell_paths}${line}
+"
+    fi
+  done < $shell_paths
+
+  printf "%s" "$clean_shell_paths" > $shell_paths
+
+  exit 0
+fi
+
+#
+# 'add' & 'rm' commands require a second argument.
+#
+if [ $# -ne 2 ]
+then
+  echo "$help_line"
+  exit 1
+fi
+
+#
+# Convert the relative path to an absolute.
+#
+dir_path=`cd "$2"; pwd -P`
+
+#
+# 'add' command will add an item only if it is really a directory.
+#
+if [ $1 = "add" ]
+then
+  if [ ! -d "$dir_path" ]
+  then
+    echo "error: Not a directory; '$2'" 1>&2
+    exit 1
+  fi
+
+  if grep -qsFx "$dir_path" "$shell_paths"
+  then
+    echo "Directory already in paths file: \"$dir_path\""
+    exit 0
+  fi
+
+  printf "%s\n" "$dir_path" >> "$shell_paths"
+  echo "$dir_path added to 'user_shell_paths'"
+  echo "Run '. export_vars' to add it to your \$PATH now."
+  exit 0
+fi
+
+#
+# 'rm' is removing item from 'user_shell_paths'.
+#
+if [ $1 = "rm" ]
+then
+  if [ -z "$dir_path" ]
+  then
+    echo "Run 'clean' if you want to remove obsolete directories from '\$PATH' (i.e. deleted)."
+    exit 1
+  fi
+
+  # Remove exact matches only.
+  updated_file=$(grep -Fx -v -e "$dir_path" "$shell_paths")
+  printf "%s\n" "$updated_file" > "$shell_paths"
+  exit 0
+fi
+
+#
+# Unrecognized command, print help line.
+#
+echo "$help_line"
+exit 1
