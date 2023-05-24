@@ -66,6 +66,32 @@ then
   exit 0
 fi
 
+
+#
+# 'ls' will list directory entries.
+#
+if [ "$1" = "ls" ]
+then
+  while IFS= read -r line
+  do
+    # If line does not start with '/' skip it (continue).
+    case $line in
+      "/"*) ;;
+      *) continue ;;
+    esac
+
+    if [ ! -d "$line" ]
+    then
+      echo "$line [not found]"
+    else
+      echo "$line"
+    fi
+  done < $shell_paths
+
+  exit 0
+fi
+
+
 #
 # 'add' & 'rm' commands require a second argument.
 #
@@ -75,10 +101,18 @@ then
   exit 1
 fi
 
+
+if [ ! -d "$2" ]
+then
+  echo "error: Not a directory. Use 'clean' command to remove non-existing directories from config file." 1>&2
+  exit 1
+fi
+
+
 #
 # Convert the relative path to an absolute.
 #
-dir_path=`cd "$2"; pwd -P`
+dir_path=`cd -- "$2" && pwd -P`
 
 #
 # 'add' command will add an item only if it is really a directory.

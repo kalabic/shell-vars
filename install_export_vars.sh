@@ -6,6 +6,15 @@
 # add them to user's $PATH at login.
 
 
+# Do changes only if there is one argument and it is '-i', otherwise just print info and exit.
+do_install=
+
+if [ $# -eq 1 ] && [ "$1" = "-i" ]
+then
+  do_install="true"
+fi
+
+
 # Updated by 'update_shell_profile()'
 profile_file=
 
@@ -76,23 +85,32 @@ then
   echo "* error: Please install line manually."
   echo "* "
 else
-  echo "Shell profile file seem to be: $profile_file"
+  echo "   Profile file: $profile_file"
 
   if grep -qsFx "$profile_line" "$profile_file"
   then
-    echo "Line already installed."
-  else
+    echo "         Status: Line already installed."
+  elif ! [ -z $do_install ]
+  then
     printf "\n# Following line was installed by 'install_export_vars.sh' script.\n%s\n" "$profile_line" >> "$profile_file"
     printf "Updated shell profile file: %s\n" "$profile_file" >> "$original_script_dir/install_log.txt"
-    echo "Line installed."
+    echo "         Status: Line installed."
+  else
+    echo "         Status: Line not installed."
   fi
 fi
 
 
-# Add directory where 'shell-vars' scripts are located as first item in 'user_shell_paths',
-# so utils like 'shellpath' can be run from anywhere on next login.
-if ! "$original_script_dir/bin/shellpath" add "$original_script_dir/bin"
+if ! [ -z $do_install ]
 then
-  echo "error: adding own path failed."
-  exit 1
+  # Add directory where 'shell-vars' scripts are located as first item in 'user_shell_paths',
+  # so utils like 'shellpath' can be run from anywhere on next login.
+  if ! "$original_script_dir/bin/shellpath" add "$original_script_dir/bin"
+  then
+    echo "error: adding own path failed."
+    exit 1
+  fi
+else
+  echo ""
+  echo "Nothing was changed. Use '-i' argument to make changes."
 fi
