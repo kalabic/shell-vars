@@ -1,14 +1,25 @@
 #!/bin/sh
 
-# export_vars, v0.5
+# export_vars, v1.0
 # For immediate addition of entries from 'user_shell_paths' to 'PATH' variable.
 # Will skip items already in 'PATH', so it can be invoked multiple times from
 # multiple places safely. Run from command line with a dot: `. export_vars`
 
 shell_paths=~/.config/shell-vars/user_shell_paths
+
+# If there is an argument and it starts with 'test',
+# read configuration file from current folder.
+if [ $# -gt 0 ]
+then
+  case $1 in
+    "test"*) shell_paths=./user_shell_paths ;;
+    *) ;;
+  esac
+fi
+
 if [ ! -f "$shell_paths" ]
 then
-  echo "error: '~/.config/shell-vars/user_shell_paths' not found" 1>&2
+  echo "error: '$shell_paths' not found" 1>&2
   exit 1
 fi
 

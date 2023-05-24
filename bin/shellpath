@@ -1,16 +1,27 @@
 #!/bin/sh
 
-# shellpath, v0.5
+# shellpath, v1.0
 # Add/remove entries from 'user_shell_paths' configuration file.
 # Commands: add <PATH>, rm <PATH>, clean - <PATH> can be relative, i.e. '.' (current directory)
 
 comment_line="# DO NOT EDIT. Generated with 'shellpath'. List of user's paths to be added to '\$PATH' at login."
 help_line="Use: add <PATH>, rm <PATH>, clean"
 
-#
-# Check if '~/.config/shell-vars/user_shell_paths' exists, if not create empty one.
-#
 shell_paths_dir=~/.config/shell-vars
+
+# If there is an argument and it starts with 'test',
+# create/read configuration file from current folder.
+if [ $# -gt 0 ]
+then
+  case $1 in
+    "test"*) shell_paths_dir=./ ;;
+    *) ;;
+  esac
+fi
+
+#
+# Check if 'user_shell_paths' exists, if not create empty one.
+#
 if [ ! -d "$shell_paths_dir" ]
 then
   mkdir -p "$shell_paths_dir"
@@ -25,7 +36,7 @@ shell_paths="${shell_paths_dir}/user_shell_paths"
 if [ ! -f "$shell_paths" ]
 then
   printf "%s\n" "$comment_line" > "$shell_paths"
-  echo "New 'user_shell_paths' config file created in '.config/shell-vars'"
+  echo "New 'user_shell_paths' config file created in $shell_paths_dir"
 fi
 
 #
@@ -40,7 +51,7 @@ fi
 #
 # 'clean' will remove empty lines and invalid directory entries.
 #
-if [ "$1" = "clean" ]
+if [ "$1" = "clean" ] || [ "$1" = "testclean" ]
 then
   clean_shell_paths="${comment_line}
 "
@@ -70,7 +81,7 @@ fi
 #
 # 'ls' will list directory entries.
 #
-if [ "$1" = "ls" ]
+if [ "$1" = "ls" ] || [ "$1" = "testls" ]
 then
   while IFS= read -r line
   do
@@ -117,7 +128,7 @@ dir_path=`cd -- "$2" && pwd -P`
 #
 # 'add' command will add an item only if it is really a directory.
 #
-if [ $1 = "add" ]
+if [ $1 = "add" ] || [ "$1" = "testadd" ]
 then
   if [ ! -d "$dir_path" ]
   then
@@ -140,7 +151,7 @@ fi
 #
 # 'rm' is removing item from 'user_shell_paths'.
 #
-if [ $1 = "rm" ]
+if [ $1 = "rm" ] || [ "$1" = "testrm" ]
 then
   if [ -z "$dir_path" ]
   then
