@@ -43,7 +43,10 @@ Add/remove entries from PATH environment variable in user's scope. Commands: `ad
 There is no other scripts or config files for Windows. Changes to local user's 'PATH' variable are immediate and permanent.
 
 ### Usage
-Same as 'shellpath' above. After download, run this line in PowerShell terminal in directory where you placed it. Script will add its own directory to 'PATH' and next time PowerShell or CMD terminal is open, it will be available for use anywhere from command line.
+After download, double-click on `install_path.bat` from Explorer, or run this in PowerShell terminal in directory where you placed it: `.\shellpath.ps1 add .`.
+
+Script will add its own directory to 'PATH' and next time PowerShell or CMD terminal is open, it will be available for use from command line.
 ```
-.\shellpath.ps1 add .
+C:\Users\TestUser>shellpath
+Use commands: add <PATH>, rm <PATH>, clean, ls - PATH can be relative
 ```
