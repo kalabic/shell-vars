@@ -2,10 +2,10 @@
 
 # shellpath, v1.0
 # Add/remove entries from 'user_shell_paths' configuration file.
-# Commands: add <PATH>, rm <PATH>, clean - <PATH> can be relative, i.e. '.' (current directory)
+# Commands: add <PATH>, rm <PATH>, clean, ls - <PATH> can be relative, i.e. '.' (current directory)
 
 comment_line="# DO NOT EDIT. Generated with 'shellpath'. List of user's paths to be added to '\$PATH' at login."
-help_line="Use: add <PATH>, rm <PATH>, clean"
+help_line="Use: add <PATH>, rm <PATH>, clean, ls"
 
 shell_paths_dir=~/.config/shell-vars
 
